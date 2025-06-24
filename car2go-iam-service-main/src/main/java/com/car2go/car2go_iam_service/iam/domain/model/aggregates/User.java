@@ -31,8 +31,9 @@ public class User extends AuditableAbstractAggregateRoot<User> {
     @Size(max = 120)
     private String password;
 
-    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"),
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "user_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles;
 
@@ -84,12 +85,4 @@ public class User extends AuditableAbstractAggregateRoot<User> {
     public Set<Role> getRoles() {
         return roles;
     }
-
-    public Long getId() {
-        return this.getId();
-    }
-
-    
-
-
 }

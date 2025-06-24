@@ -18,9 +18,14 @@ import java.util.Date;
 public class AuditableAbstractAggregateRoot<T extends AbstractAggregateRoot<T>> extends AbstractAggregateRoot<T> {
 
     @Id
-    @Getter
     @GeneratedValue(strategy = GenerationType.IDENTITY) // Genera un ID único automáticamente
+    @Column(name = "id")
+    @Getter
     private Long id;
+    
+    public Long getId() {
+        return id;
+    }
 
     @Getter
     @CreatedDate // Se establece automáticamente cuando se crea la entidad

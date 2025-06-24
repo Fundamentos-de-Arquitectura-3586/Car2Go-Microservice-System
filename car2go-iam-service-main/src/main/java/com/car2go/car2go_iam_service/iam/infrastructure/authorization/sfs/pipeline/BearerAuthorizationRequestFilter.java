@@ -44,25 +44,41 @@ public class BearerAuthorizationRequestFilter extends OncePerRequestFilter {
      * @param filterChain The filter chain object.
      */
     @Override
+    protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
+        String path = request.getRequestURI();
+        return path.startsWith("/api/v1/authentication/")
+                || path.startsWith("/v3/api-docs")
+                || path.startsWith("/swagger-ui")
+                || path.startsWith("/swagger-resources")
+                || path.startsWith("/webjars");
+    }
+
+    @Override
     protected void doFilterInternal(
             @NonNull HttpServletRequest request,
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain) throws ServletException, IOException {
+
+        String token = tokenService.getBearerTokenFrom(request);
+        if (token == null) {
+            LOGGER.debug("No token found in request");
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         try {
-            String token = tokenService.getBearerTokenFrom(request);
-            LOGGER.info("Token: {}", token);
-            if (token != null && tokenService.validateToken(token)) {
+            if (tokenService.validateToken(token)) {
                 String username = tokenService.getUsernameFromToken(token);
                 var userDetails = userDetailsService.loadUserByUsername(username);
-                SecurityContextHolder.getContext()
-                        .setAuthentication(UsernamePasswordAuthenticationTokenBuilder
-                                .build(userDetails, request));
-            } else {
-                LOGGER.info("Token is not valid");
+                var authentication = UsernamePasswordAuthenticationTokenBuilder.build(userDetails, request);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+                LOGGER.debug("Set authentication for user: {}", username);
             }
         } catch (Exception e) {
             LOGGER.error("Cannot set user authentication: {}", e.getMessage());
+            SecurityContextHolder.clearContext();
         }
+        
         filterChain.doFilter(request, response);
     }
 }

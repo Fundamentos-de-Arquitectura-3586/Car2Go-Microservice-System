@@ -2,11 +2,7 @@ package com.car2go.car2go_iam_service.iam.domain.model.entities;
 
 import jakarta.persistence.*;
 import lombok.Getter;
-import org.springframework.data.annotation.Id;
 import com.car2go.car2go_iam_service.iam.domain.model.valueobjects.Roles;
-
-import com.car2go.car2go_iam_service.iam.domain.model.valueobjects.Roles;
-
 import java.util.List;
 
 /**
@@ -18,9 +14,8 @@ import java.util.List;
  */
 @Entity
 public class Role {
-    @jakarta.persistence.Id
-    @Getter
     @Id
+    @Getter
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 

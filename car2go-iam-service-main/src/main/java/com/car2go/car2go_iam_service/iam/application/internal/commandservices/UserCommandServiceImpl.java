@@ -73,20 +73,16 @@ public class UserCommandServiceImpl implements UserCommandService {
      * @return and optional containing the user matching the username and the generated token
      * @throws RuntimeException if the user is not found or the password is invalid
      */
-    @Override
+     @Override
     public Optional<ImmutablePair<User, String>> handle(SignInCommand command) {
-    var userOptional = userRepository.findByUsername(command.username());
-    
-    if (userOptional.isEmpty()) {
-        throw new RuntimeException("User not found");
+        var user = userRepository.findByUsername(command.username());
+        System.out.println("User found: " + user.isPresent());
+        if (user.isEmpty()) throw new RuntimeException("User not found");
+        if (!hashingService.matches(command.password(), user.get().getPassword()))
+            throw new RuntimeException("Invalid password");
+        var token = tokenService.generateToken(user.get().getUsername(), user.get().getId());
+        System.out.println("Token generated: " + token);
+        if (token == null || token.isEmpty()) throw new RuntimeException("Token generation failed");
+        return Optional.of(ImmutablePair.of(user.get(), token));
     }
-    
-    var user = userOptional.get(); // Ahora es seguro usar .get()
-
-    if (!hashingService.matches(command.password(), user.getPassword()))
-        throw new RuntimeException("Invalid password");
-
-    var token = tokenService.generateToken(user.getUsername(), user.getId());
-    return Optional.of(ImmutablePair.of(user, token));
-}
 }

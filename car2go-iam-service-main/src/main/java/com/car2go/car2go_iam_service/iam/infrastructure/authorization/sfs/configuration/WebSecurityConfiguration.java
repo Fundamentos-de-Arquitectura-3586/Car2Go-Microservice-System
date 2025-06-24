@@ -103,6 +103,7 @@ public class WebSecurityConfiguration {
      * @param http The http security
      * @return The security filter chain
      */
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         // CORS default configuration
@@ -117,13 +118,10 @@ public class WebSecurityConfiguration {
                 .exceptionHandling(exceptionHandling -> exceptionHandling.authenticationEntryPoint(unauthorizedRequestHandler))
                 .sessionManagement(customizer -> customizer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorizeRequests -> authorizeRequests
+                        // Authentication endpoints
+                        .requestMatchers("/api/v1/authentication/**").permitAll()
+                        // Swagger UI and API docs
                         .requestMatchers(
-                                "api/v1/roles",
-                                "api/v1/users",
-                                "api/v1/vehicle/**",
-                                "api/v1/plans/**",
-
-                                "/api/v1/authentication/**",
                                 "/v3/api-docs/**",
                                 "/swagger-ui.html",
                                 "/swagger-ui/index.html",
@@ -131,6 +129,7 @@ public class WebSecurityConfiguration {
                                 "/swagger-resources/**",
                                 "/webjars/**"
                         ).permitAll()
+                        // All other endpoints require authentication
                         .anyRequest().authenticated());
         http.authenticationProvider(authenticationProvider());
         http.addFilterBefore(authorizationRequestFilter(), UsernamePasswordAuthenticationFilter.class);
