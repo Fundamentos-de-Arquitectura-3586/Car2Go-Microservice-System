@@ -16,23 +16,21 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 
-import javax.crypto.SecretKey;
-
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     // Usa exactamente el mismo secret con el que generaste el token
     private static final String SECRET_KEY = "WriteHereYourSecretStringForTokenSigningCredentials"; // 32 caracteres
 
-    private final SecretKey key = Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8));
+    private final byte[] keyBytes = SECRET_KEY.getBytes(StandardCharsets.UTF_8);
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        System.out.println("🔥 Filtro JWT interceptó la petición");
+        System.out.println("Filtro JWT interceptó la petición");
 
         final String authHeader = request.getHeader("Authorization");
-        System.out.println("🛂 Authorization header: " + authHeader);
+        System.out.println("Authorization header: " + authHeader);
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
@@ -42,11 +40,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String jwt = authHeader.substring(7);
         Claims claims;
         try {
-            claims = Jwts.parserBuilder()
-                    .setSigningKey(key)
+            claims = Jwts.parser()
+                    .verifyWith(Keys.hmacShaKeyFor(keyBytes))
                     .build()
-                    .parseClaimsJws(jwt)
-                    .getBody();
+                    .parseSignedClaims(jwt)
+                    .getPayload();
         } catch (Exception e) {
             // Firma inválida o token corrupto
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);

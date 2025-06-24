@@ -1,25 +1,35 @@
-package com.car2go.car2go_iam_service.iam.application.internal.outboundservices.acl;
+package com.pe.platform.vehicle.application.internal.services.outboundservice;
+
+import com.pe.platform.vehicle.domain.model.dto.User;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
+import java.util.Optional;
 
 @Service
 public class VehicleService {
     private final WebClient webClient;
 
     public VehicleService(WebClient.Builder webClientBuilder) {
-        this.webClient = webClientBuilder.baseUrl("http://car2go-vehicle-service").build();
+        this.webClient = webClientBuilder
+            .baseUrl("http://localhost:8080")
+            .build();
     }
 
-    // Calls for other bounded services that are used by Vehicle
-    public User getUserById(Long userId) {
+    public boolean validateUserExists(String userId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String token = authentication.getCredentials().toString();
 
-        return webClient.get()
-                .uri("/users/{id}", userId)
-                .header("Authorization", "Bearer " + token)
-                .retrieve()
-                .bodyToMono(User.class)
-                .block();
+        try {
+            return webClient.get()
+                    .uri("/iam-service/api/v1/users/{id}", userId)
+                    .header("Authorization", "Bearer " + token)
+                    .retrieve()
+                    .bodyToMono(Boolean.class)
+                    .block();
+        } catch (Exception e) {
+            return false;
+        }
     }
-    
 }

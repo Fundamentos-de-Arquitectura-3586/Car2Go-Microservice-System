@@ -6,6 +6,7 @@ import com.pe.platform.vehicle.domain.model.commands.UpdateVehicleCommand;
 import com.pe.platform.vehicle.domain.services.VehicleCommandService;
 import com.pe.platform.vehicle.infrastructure.persistence.jpa.VehicleRepository;
 import jakarta.transaction.Transactional;
+import com.pe.platform.vehicle.application.internal.services.outboundservice.VehicleService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -31,25 +32,23 @@ public class VehicleCommandServiceImpl implements VehicleCommandService {
             throw new IllegalStateException("Unauthorized");
         }
         
-        // Extract user ID from the authentication principal
-    
-        var user = this.vehicleService.getUserById(authentication.getPrincipal().toString())
-                .orElseThrow(() -> new IllegalStateException("User not found when looking for your ID"));
+        String userId = authentication.getPrincipal().toString();
+        
+        // Solo validamos que el usuario existe
+        if (!vehicleService.validateUserExists(userId)) {
+            throw new IllegalStateException("User not found or not authorized");
+        }
 
         try {
-            user.userId = Long.parseLong(authentication.getPrincipal().toString());
+            long userIdLong = Long.parseLong(userId);
+            // Usamos directamente el ID del usuario del token            
+            var newVehicle = new Vehicle(command);
+            newVehicle.setProfileId(userIdLong);
+            var createdVehicle = vehicleRepository.save(newVehicle);
+            return Optional.of(createdVehicle);
         } catch (NumberFormatException e) {
             throw new IllegalStateException("Invalid user ID in token");
         }
-
-        command.email = user.email;
-        command.name = user.name;
-        command.phone = user.phone;
-
-        var newVehicle = new Vehicle(command);
-        newVehicle.setProfileId(user.userId);
-        var createdVehicle = vehicleRepository.save(newVehicle);
-        return Optional.of(createdVehicle);
     }
 
     @Transactional
@@ -61,26 +60,26 @@ public class VehicleCommandServiceImpl implements VehicleCommandService {
             throw new IllegalStateException("Unauthorized");
         }
 
-        // Extract user ID from the authentication principal
-        var vehicleService = this.vehicleService;
-        vehicleService.getUserById(authentication.getPrincipal().toString())
-                .orElseThrow(() -> new IllegalStateException("User not found when looking for your ID"));
+        String userId = authentication.getPrincipal().toString();
+        if (!vehicleService.validateUserExists(userId)) {
+            throw new IllegalStateException("User not found or not authorized");
+        }
 
-        Long userId;
+        Long userIdLong;
         try {
-            userId = Long.parseLong(authentication.getPrincipal().toString());
+            userIdLong = Long.parseLong(userId);
         } catch (NumberFormatException e) {
             throw new IllegalStateException("Invalid user ID in token");
         }
 
         Optional<Vehicle> vehicleOptional = vehicleRepository.findById(vehicleId);
-        if (vehicleOptional.isEmpty() || vehicleOptional.get().getProfileId() != userId) {
+        if (vehicleOptional.isEmpty() || vehicleOptional.get().getProfileId() != userIdLong) {
             throw new IllegalStateException("The vehicle does not exist or you do not have permission to update it.");
         }
 
         Vehicle vehicle = vehicleOptional.get();
         vehicle.updateVehicleInfo(command);
-        vehicle.setProfileId(userId);
+        vehicle.setProfileId(userIdLong);
 
         var updatedVehicle = vehicleRepository.save(vehicle);
         return Optional.of(updatedVehicle);
@@ -91,10 +90,9 @@ public class VehicleCommandServiceImpl implements VehicleCommandService {
     public void deleteVehicle(int vehicleId, long userId) {
         Optional<Vehicle> vehicleOptional = vehicleRepository.findById(vehicleId);
         
-        
-        vehicleService.getUserById(String.valueOf(userId))
-                .orElseThrow(() -> new IllegalStateException("User not found when looking for your ID"));
-
+        if (!vehicleService.validateUserExists(String.valueOf(userId))) {
+            throw new IllegalStateException("User not found when looking for your ID");
+        }
 
         if (vehicleOptional.isEmpty() || vehicleOptional.get().getProfileId() != userId) {
             throw new IllegalStateException("The vehicle does not exist or you do not have permission to delete it.");

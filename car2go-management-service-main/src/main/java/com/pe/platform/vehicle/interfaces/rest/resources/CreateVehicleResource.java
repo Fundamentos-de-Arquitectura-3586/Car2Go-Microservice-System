@@ -3,7 +3,9 @@ package com.pe.platform.vehicle.interfaces.rest.resources;
 import java.util.List;
 
 public record CreateVehicleResource(
-                                    String userId,
+                                    String name,
+                                    String phone,
+                                    String email,
                                     String brand,
                                     String model,
                                     String color,
@@ -21,9 +23,6 @@ public record CreateVehicleResource(
                                     int speed) {
 
     public CreateVehicleResource {
-        if (userId == null || userId.isBlank()) {
-            throw new IllegalArgumentException("User ID cannot be null or empty");
-        }
         if (brand == null || brand.isBlank()) {
             throw new IllegalArgumentException("Brand cannot be null or empty");
         }
