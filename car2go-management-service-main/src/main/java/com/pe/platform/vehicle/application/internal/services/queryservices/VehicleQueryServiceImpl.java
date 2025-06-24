@@ -40,11 +40,16 @@ public class VehicleQueryServiceImpl implements VehicleQueryService {
 
     @Override
     public List<Vehicle> handle(GetAllVehicleByProfileId query) {
+
         return vehicleRepository.findAllVehiclesByProfileId(query.profileId());
     }
 
     @Override
     public List<Vehicle> handle(GetVehicleIdByProfileId query) {
+
+        // This method retrieves all vehicles associated with a specific profile ID.
+        // It returns a list of vehicles that match the provided profile ID
+
         return vehicleRepository.findByProfileId(query.profileId());
     }
 }

@@ -16,9 +16,11 @@ import java.util.Optional;
 public class VehicleCommandServiceImpl implements VehicleCommandService {
 
     private final VehicleRepository vehicleRepository;
+    private final VehicleService vehicleService;
 
-    public VehicleCommandServiceImpl(VehicleRepository vehicleRepository) {
+    public VehicleCommandServiceImpl(VehicleRepository vehicleRepository, VehicleService vehicleService) {
         this.vehicleRepository = vehicleRepository;
+        this.vehicleService = vehicleService;
     }
 
     @Override
@@ -28,18 +30,24 @@ public class VehicleCommandServiceImpl implements VehicleCommandService {
         if (authentication == null || authentication.getPrincipal() == null) {
             throw new IllegalStateException("Unauthorized");
         }
+        
+        // Extract user ID from the authentication principal
+    
+        var user = this.vehicleService.getUserById(authentication.getPrincipal().toString())
+                .orElseThrow(() -> new IllegalStateException("User not found when looking for your ID"));
 
-        Long userId;
         try {
-            userId = Long.parseLong(authentication.getPrincipal().toString());
+            user.userId = Long.parseLong(authentication.getPrincipal().toString());
         } catch (NumberFormatException e) {
             throw new IllegalStateException("Invalid user ID in token");
         }
 
-  
+        command.email = user.email;
+        command.name = user.name;
+        command.phone = user.phone;
 
         var newVehicle = new Vehicle(command);
-        newVehicle.setProfileId(userId);
+        newVehicle.setProfileId(user.userId);
         var createdVehicle = vehicleRepository.save(newVehicle);
         return Optional.of(createdVehicle);
     }
@@ -52,6 +60,11 @@ public class VehicleCommandServiceImpl implements VehicleCommandService {
         if (authentication == null || authentication.getPrincipal() == null) {
             throw new IllegalStateException("Unauthorized");
         }
+
+        // Extract user ID from the authentication principal
+        var vehicleService = this.vehicleService;
+        vehicleService.getUserById(authentication.getPrincipal().toString())
+                .orElseThrow(() -> new IllegalStateException("User not found when looking for your ID"));
 
         Long userId;
         try {
@@ -77,6 +90,11 @@ public class VehicleCommandServiceImpl implements VehicleCommandService {
     @Transactional
     public void deleteVehicle(int vehicleId, long userId) {
         Optional<Vehicle> vehicleOptional = vehicleRepository.findById(vehicleId);
+        
+        
+        vehicleService.getUserById(String.valueOf(userId))
+                .orElseThrow(() -> new IllegalStateException("User not found when looking for your ID"));
+
 
         if (vehicleOptional.isEmpty() || vehicleOptional.get().getProfileId() != userId) {
             throw new IllegalStateException("The vehicle does not exist or you do not have permission to delete it.");
