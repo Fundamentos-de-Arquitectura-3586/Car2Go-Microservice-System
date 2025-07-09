@@ -1,16 +1,17 @@
-package com.pe.platform.shared.infrastructure.security.config;
+package com.car2go.car2go_payment_service.shared.Infrastructure.config;
 
-import com.pe.platform.shared.infrastructure.security.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import com.car2go.car2go_payment_service.shared.Infrastructure.security.JwtAuthenticationFilter;
+
 @Configuration
 public class FilterConfig {
-// Que debo poner?
 
 
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
         return new JwtAuthenticationFilter();
+        
     }
 }

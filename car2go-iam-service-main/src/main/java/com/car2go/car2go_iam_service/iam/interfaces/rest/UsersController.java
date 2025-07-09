@@ -2,7 +2,8 @@ package com.car2go.car2go_iam_service.iam.interfaces.rest;
 
 
 
-import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.List;
+
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,7 +17,7 @@ import com.car2go.car2go_iam_service.iam.domain.services.UserQueryService;
 import com.car2go.car2go_iam_service.iam.interfaces.rest.resources.UserResource;
 import com.car2go.car2go_iam_service.iam.interfaces.rest.transform.UserResourceFromEntityAssembler;
 
-import java.util.List;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
  * This class is a REST controller that exposes the users resource.

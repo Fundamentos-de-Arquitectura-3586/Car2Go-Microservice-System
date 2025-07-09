@@ -1,16 +1,14 @@
-package com.pe.platform.shared.infrastructure.security.config;
+package com.car2go.car2go_payment_service.shared.Infrastructure.config;
 
-import com.pe.platform.shared.infrastructure.security.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-@Configuration
-public class SecurityConfig {
 
-//Aqui lee la auth y la valida
-// Debes poner el filtro JWT antes de cualquier otro filtro de seguridad
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {

@@ -28,6 +28,14 @@ spring:
           uri: lb://vehicle-service
           predicates:
             - Path=/vehicle-service/**
+        - id: profile-service
+          uri: lb://profile-service
+          predicates:
+            - Path=/profile-service/**
+        - id: interaction-service
+          uri: lb://interaction-service
+          predicates:
+            - Path=/interaction-service/**
 
 server:
   port: 8080

@@ -1,6 +1,17 @@
 # Microservices - Car 2 Go
 Microservices Migration
 
+IAM(Auth) -> Manda ID de la cuenta creada
+
+Payments(Data de las ofertas de vehiculo) (necesita IdVehiculo)
+
+Interaction (Favorite/Review) (Favorites: NecesitaIdVehiculo(ya tiene el perfilId) - Review: Necesitas VehicleID )
+
+Profiles(Generacion de perfil) [PROFILES agregar desde repo general y configurar] <-Recibe id de la cuenta para crear perfil //PRIORIDAD ALTA
+
+Vehicle(Subir vehiculo) -> Manda VehicleId a Payments (Necesita IdDelPerfil de usuario) (contiene el profile Id se persiste)
+
+
 ## 🏗️ Architecture
 
 - **Eureka Server** (Port 8761) - Service Discovery

@@ -67,6 +67,12 @@
             <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
         </dependency>
         
+        <!-- WebClient for microservice communication -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webflux</artifactId>
+        </dependency>
+        
         <!-- JWT -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>

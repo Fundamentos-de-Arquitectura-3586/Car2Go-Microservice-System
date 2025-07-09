@@ -44,6 +44,7 @@ public class TransactionCommandServiceImpl implements TransactionCommandService 
             // SIMPLIFIED: Use IDs directly instead of fetching external entities
             // In a microservices architecture, we trust the command parameters 
             // and validate through API calls if needed
+            
             Long buyerId = command.buyerId();
             Long sellerId = command.sellerId(); 
             Long vehicleId = command.vehicleId();

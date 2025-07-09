@@ -41,7 +41,10 @@ public class VehicleCommandServiceImpl implements VehicleCommandService {
 
         try {
             long userIdLong = Long.parseLong(userId);
-            // Usamos directamente el ID del usuario del token            
+            // Usamos directamente el ID del usuario del token  
+            //Como se espera q el ID del usuario y del profile sean iguales, no es necesario hacer una validación adicional
+            //en todo caso igual se puede usar el servicio para validar que existe el perfil del usuario
+                      
             var newVehicle = new Vehicle(command);
             newVehicle.setProfileId(userIdLong);
             var createdVehicle = vehicleRepository.save(newVehicle);
