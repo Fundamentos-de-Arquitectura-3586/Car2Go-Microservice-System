@@ -1,0 +1,106 @@
+services:
+  eureka-server:
+    build:
+      context: ./eureka
+      dockerfile: Dockerfile
+    ports:
+      - "8761:8761"
+    networks:
+      - micro-net
+    environment:
+      - HOSTNAME=eureka-server
+
+  iam-service:
+    build:
+      context: ./car2go-iam-service-main
+      dockerfile: Dockerfile
+    depends_on:
+      - eureka-server
+    environment:
+      - EUREKA_SERVER=http://eureka-server:8761/eureka/
+      - HOSTNAME=iam-service
+    networks:
+      - micro-net
+    ports:
+      - "8081:8081"
+
+  management-service:
+    build:
+      context: ./car2go-management-service-main
+      dockerfile: Dockerfile
+    depends_on:
+      - eureka-server
+    environment:
+      - EUREKA_SERVER=http://eureka-server:8761/eureka/
+      - HOSTNAME=management-service
+    networks:
+      - micro-net
+    ports:
+      - "8082:8082"
+
+  payment-service:
+    build:
+      context: ./car2go-payment-service-main
+      dockerfile: Dockerfile
+    depends_on:
+      - eureka-server
+      - iam-service
+    environment:
+      - EUREKA_SERVER=http://eureka-server:8761/eureka/
+      - HOSTNAME=payment-service
+    networks:
+      - micro-net
+    ports:
+      - "8083:8083"
+
+  userinteraction-service:
+    build:
+      context: ./car2go-userinteraction-main
+      dockerfile: Dockerfile
+    depends_on:
+      - eureka-server
+      - management-service
+    environment:
+      - EUREKA_SERVER=http://eureka-server:8761/eureka/
+      - HOSTNAME=interaction-service
+    networks:
+      - micro-net
+    ports:
+      - "8085:8085"
+
+  profile-service:
+    build:
+      context: ./car2go-profile-service-main
+      dockerfile: Dockerfile
+    depends_on:
+      - eureka-server
+    environment:
+      - EUREKA_SERVER=http://eureka-server:8761/eureka/
+      - HOSTNAME=profile-service
+    networks:
+      - micro-net
+    ports:
+      - "8084:8084"
+
+  gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    environment:
+      - EUREKA_SERVER=http://eureka-server:8761/eureka/
+      - HOSTNAME=gateway-service
+    networks:
+      - micro-net
+    ports:
+      - "8080:8080"
+    depends_on:
+      - eureka-server
+      - iam-service
+      - management-service
+      - payment-service
+      - userinteraction-service
+      - profile-service
+
+networks:
+  micro-net:
+    driver: bridge
