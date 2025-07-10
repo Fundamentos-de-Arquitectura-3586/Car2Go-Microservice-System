@@ -12,14 +12,10 @@ spring:
           uri: lb://iam-service
           predicates:
             - Path=/iam-service/**
-        - id: management-service
-          uri: lb://management-service
+        - id: vehicle-service
+          uri: lb://vehicle-service
           predicates:
-            - Path=/management-service/**
-        - id: user-service
-          uri: lb://user-service
-          predicates:
-            - Path=/user-service/**
+            - Path=/vehicle-service/**
         - id: payment-service
           uri: lb://payment-service
           predicates:

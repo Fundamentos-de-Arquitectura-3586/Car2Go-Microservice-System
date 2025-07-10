@@ -1,0 +1,286 @@
+services:
+  # MySQL Database for IAM Service
+  mysql-iam:
+    image: mysql:8.0
+    container_name: mysql-iam
+    environment:
+      MYSQL_ROOT_PASSWORD: iam_password
+      MYSQL_DATABASE: car2go_iam_service
+    ports:
+      - "3306:3306"
+    networks:
+      - micro-net
+    volumes:
+      - mysql_iam_data:/var/lib/mysql
+      - ./init-iam-db.sql:/docker-entrypoint-initdb.d/init-iam-db.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+      interval: 10s
+      start_period: 40s
+
+  # MySQL Database for Vehicle Service
+  mysql-vehicle:
+    image: mysql:8.0
+    container_name: mysql-vehicle
+    environment:
+      MYSQL_ROOT_PASSWORD: vehicle_password
+      MYSQL_DATABASE: car2go_vehicle_service
+    ports:
+      - "3307:3306"
+    networks:
+      - micro-net
+    volumes:
+      - mysql_vehicle_data:/var/lib/mysql
+      - ./init-vehicle-db.sql:/docker-entrypoint-initdb.d/init-vehicle-db.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+      interval: 10s
+      start_period: 40s
+
+  # MySQL Database for Payment Service
+  mysql-payment:
+    image: mysql:8.0
+    container_name: mysql-payment
+    environment:
+      MYSQL_ROOT_PASSWORD: payment_password
+      MYSQL_DATABASE: car2go_payment_service
+    ports:
+      - "3308:3306"
+    networks:
+      - micro-net
+    volumes:
+      - mysql_payment_data:/var/lib/mysql
+      - ./init-payment-db.sql:/docker-entrypoint-initdb.d/init-payment-db.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+      interval: 10s
+      start_period: 40s
+
+  # MySQL Database for Profile Service
+  mysql-profile:
+    image: mysql:8.0
+    container_name: mysql-profile
+    environment:
+      MYSQL_ROOT_PASSWORD: profile_password
+      MYSQL_DATABASE: car2go_profile_service
+    ports:
+      - "3309:3306"
+    networks:
+      - micro-net
+    volumes:
+      - mysql_profile_data:/var/lib/mysql
+      - ./init-profile-db.sql:/docker-entrypoint-initdb.d/init-profile-db.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+      interval: 10s
+      start_period: 40s
+
+  # MySQL Database for User Interaction Service
+  mysql-interaction:
+    image: mysql:8.0
+    container_name: mysql-interaction
+    environment:
+      MYSQL_ROOT_PASSWORD: interaction_password
+      MYSQL_DATABASE: car2go_userinteraction_service
+    ports:
+      - "3310:3306"
+    networks:
+      - micro-net
+    volumes:
+      - mysql_interaction_data:/var/lib/mysql
+      - ./init-interaction-db.sql:/docker-entrypoint-initdb.d/init-interaction-db.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+      interval: 10s
+      start_period: 40s
+
+  # Eureka Discovery Service
+  eureka-server:
+    build:
+      context: ./eureka
+      dockerfile: Dockerfile
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+    networks:
+      - micro-net
+    environment:
+      - HOSTNAME=eureka-server
+    healthcheck:
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:8761/eureka/apps || exit 1"]
+      timeout: 10s
+      retries: 5
+      interval: 30s
+      start_period: 60s
+
+  # IAM Service
+  iam-service:
+    build:
+      context: ./car2go-iam-service-main
+      dockerfile: Dockerfile
+    container_name: iam-service
+    depends_on:
+      mysql-iam:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    environment:
+      - EUREKA_SERVER=http://eureka-server:8761/eureka/
+      - HOSTNAME=iam-service
+      - DB_HOST=mysql-iam
+      - DB_PORT=3306
+      - DB_NAME=car2go_iam_service
+      - DB_USERNAME=root
+      - DB_PASSWORD=iam_password
+    networks:
+      - micro-net
+    ports:
+      - "8081:8081"
+
+  # Vehicle Management Service
+  management-service:
+    build:
+      context: ./car2go-management-service-main
+      dockerfile: Dockerfile
+    container_name: management-service
+    depends_on:
+      mysql-vehicle:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    environment:
+      - EUREKA_SERVER=http://eureka-server:8761/eureka/
+      - HOSTNAME=management-service
+      - DB_HOST=mysql-vehicle
+      - DB_PORT=3306
+      - DB_NAME=car2go_vehicle_service
+      - DB_USERNAME=root
+      - DB_PASSWORD=vehicle_password
+    networks:
+      - micro-net
+    ports:
+      - "8082:8082"
+
+  # Payment Service
+  payment-service:
+    build:
+      context: ./car2go-payment-service-main
+      dockerfile: Dockerfile
+    container_name: payment-service
+    depends_on:
+      mysql-payment:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+      iam-service:
+        condition: service_started
+    environment:
+      - EUREKA_SERVER=http://eureka-server:8761/eureka/
+      - HOSTNAME=payment-service
+      - DB_HOST=mysql-payment
+      - DB_PORT=3306
+      - DB_NAME=car2go_payment_service
+      - DB_USERNAME=root
+      - DB_PASSWORD=payment_password
+    networks:
+      - micro-net
+    ports:
+      - "8083:8083"
+
+  # Profile Service
+  profile-service:
+    build:
+      context: ./car2go-profile-service-main
+      dockerfile: Dockerfile
+    container_name: profile-service
+    depends_on:
+      mysql-profile:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    environment:
+      - EUREKA_SERVER=http://eureka-server:8761/eureka/
+      - HOSTNAME=profile-service
+      - DB_HOST=mysql-profile
+      - DB_PORT=3306
+      - DB_NAME=car2go_profile_service
+      - DB_USERNAME=root
+      - DB_PASSWORD=profile_password
+    networks:
+      - micro-net
+    ports:
+      - "8084:8084"
+
+  # User Interaction Service
+  userinteraction-service:
+    build:
+      context: ./car2go-userinteraction-main
+      dockerfile: Dockerfile
+    container_name: userinteraction-service
+    depends_on:
+      mysql-interaction:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+      management-service:
+        condition: service_started
+    environment:
+      - EUREKA_SERVER=http://eureka-server:8761/eureka/
+      - HOSTNAME=interaction-service
+      - DB_HOST=mysql-interaction
+      - DB_PORT=3306
+      - DB_NAME=car2go_userinteraction_service
+      - DB_USERNAME=root
+      - DB_PASSWORD=interaction_password
+    networks:
+      - micro-net
+    ports:
+      - "8085:8085"
+
+  # API Gateway
+  gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    container_name: gateway
+    environment:
+      - EUREKA_SERVER=http://eureka-server:8761/eureka/
+      - HOSTNAME=gateway-service
+    networks:
+      - micro-net
+    ports:
+      - "8080:8080"
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      iam-service:
+        condition: service_started
+      management-service:
+        condition: service_started
+      payment-service:
+        condition: service_started
+      userinteraction-service:
+        condition: service_started
+      profile-service:
+        condition: service_started
+
+volumes:
+  mysql_iam_data:
+  mysql_vehicle_data:
+  mysql_payment_data:
+  mysql_profile_data:
+  mysql_interaction_data:
+
+networks:
+  micro-net:
+    driver: bridge
