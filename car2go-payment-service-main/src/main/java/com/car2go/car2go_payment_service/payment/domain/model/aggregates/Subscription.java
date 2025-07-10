@@ -2,7 +2,11 @@ package com.car2go.car2go_payment_service.payment.domain.model.aggregates;
 
 import com.car2go.car2go_payment_service.payment.domain.model.valueobjects.SubscriptionStatus;
 import com.car2go.car2go_payment_service.shared.domain.model.aggregates.AuditableAbstractAggregateRoot;
-import jakarta.persistence.*;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 
 @Entity
 public class Subscription extends AuditableAbstractAggregateRoot<Subscription> {
@@ -27,10 +31,6 @@ public class Subscription extends AuditableAbstractAggregateRoot<Subscription> {
         this.description = description;
         this.status = status;
         this.profileId = profileId;
-        // Inicializar campos de auditoría temporalmente hasta que JPA Auditing esté configurado
-        java.util.Date now = new java.util.Date();
-        this.setCreatedAt(now);
-        this.setUpdatedAt(now);
     }
 
     public Integer getPrice() {
