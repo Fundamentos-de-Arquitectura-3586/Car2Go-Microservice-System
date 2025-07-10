@@ -27,6 +27,10 @@ public class Subscription extends AuditableAbstractAggregateRoot<Subscription> {
         this.description = description;
         this.status = status;
         this.profileId = profileId;
+        // Inicializar campos de auditoría temporalmente hasta que JPA Auditing esté configurado
+        java.util.Date now = new java.util.Date();
+        this.setCreatedAt(now);
+        this.setUpdatedAt(now);
     }
 
     public Integer getPrice() {

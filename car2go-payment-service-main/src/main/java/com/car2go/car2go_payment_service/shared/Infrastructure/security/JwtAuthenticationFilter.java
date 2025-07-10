@@ -2,11 +2,9 @@ package com.car2go.car2go_payment_service.shared.Infrastructure.security;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
 
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.lang.NonNull;
+import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import io.jsonwebtoken.Claims;
@@ -17,18 +15,16 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+@Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    // Usa exactamente el mismo secret con el que generaste el token
-    private static final String SECRET_KEY = "WriteHereYourSecretStringForTokenSigningCredentials"; // 32 caracteres
-
-    private final byte[] keyBytes = SECRET_KEY.getBytes(StandardCharsets.UTF_8);
+    private static final String SECRET_KEY = "WriteHereYourSecretStringForTokenSigningCredentials";
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
-        System.out.println("Filtro JWT interceptó la petición");
+    protected void doFilterInternal(@NonNull HttpServletRequest request,
+                                    @NonNull HttpServletResponse response,
+                                    @NonNull FilterChain filterChain) throws ServletException, IOException {
+        System.out.println("🔥 Filtro JWT interceptó la petición");
 
         final String authHeader = request.getHeader("Authorization");
         System.out.println("Authorization header: " + authHeader);
@@ -39,41 +35,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         final String jwt = authHeader.substring(7);
-        Claims claims;
         try {
-            claims = Jwts.parser()
-                    .verifyWith(Keys.hmacShaKeyFor(keyBytes))
+            Claims claims = Jwts.parser()
+                    .verifyWith(Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8)))
                     .build()
                     .parseSignedClaims(jwt)
                     .getPayload();
+
+            Object idClaim = claims.get("userId");
+            if (idClaim != null) {
+                request.setAttribute("JWT_TOKEN", jwt);
+                System.out.println("Token válido para userId: " + idClaim);
+            }
         } catch (Exception e) {
-            // Firma inválida o token corrupto
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            return;
+            System.err.println("Token JWT inválido: " + e.getMessage());
         }
 
-        Object idClaim = claims.get("userId");
-        if (idClaim == null) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            return;
-        }
-
-        long userId;
-        try {
-            userId = Long.parseLong(idClaim.toString());
-        } catch (NumberFormatException e) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            return;
-        }
-
-        request.setAttribute("JWT_TOKEN", jwt);
-
-        var authToken = new UsernamePasswordAuthenticationToken(
-                userId, null, Collections.emptyList()
-        );
-        authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-        SecurityContextHolder.getContext().setAuthentication(authToken);
         filterChain.doFilter(request, response);
     }
 }

@@ -15,13 +15,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.cors.CorsConfiguration;
 
 import com.car2go.car2go_iam_service.iam.infrastructure.authorization.sfs.pipeline.BearerAuthorizationRequestFilter;
 import com.car2go.car2go_iam_service.iam.infrastructure.hashing.bcrypt.BCryptHashingService;
 import com.car2go.car2go_iam_service.iam.infrastructure.tokens.jwt.BearerTokenService;
-
-import java.util.List;
 
 /**
  * Web Security Configuration.
@@ -106,7 +103,11 @@ public class WebSecurityConfiguration {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        // CORS default configuration
+        // CORS disabled temporarily for testing
+        http.cors(configurer -> configurer.disable());
+        
+        // CORS default configuration (commented out for testing)
+        /*
         http.cors(configurer -> configurer.configurationSource( source -> {
             var cors = new CorsConfiguration();
             cors.setAllowedOrigins(List.of("*"));
@@ -114,6 +115,7 @@ public class WebSecurityConfiguration {
             cors.setAllowedHeaders(List.of("*"));
             return cors;
         }));
+        */
         http.csrf(csrfConfigurer -> csrfConfigurer.disable())
                 .exceptionHandling(exceptionHandling -> exceptionHandling.authenticationEntryPoint(unauthorizedRequestHandler))
                 .sessionManagement(customizer -> customizer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
