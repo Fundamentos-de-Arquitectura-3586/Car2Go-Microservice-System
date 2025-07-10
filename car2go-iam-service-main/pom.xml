@@ -12,10 +12,10 @@
     </parent>
 
     <groupId>com.acme.center</groupId>
-    <artifactId>car-2-go-center-platform</artifactId>
+    <artifactId>car2go-iam-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>car-2-go-platform</name>
-    <description>car-2-go-platform</description>
+    <name>car2go-iam-service</name>
+    <description>Microservicio de IAM</description>
 
     <properties>
         <java.version>23</java.version>

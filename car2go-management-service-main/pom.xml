@@ -12,10 +12,10 @@
     </parent>
 
     <groupId>com.pe</groupId>
-    <artifactId>platform</artifactId>
+    <artifactId>car2go-managment-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>car2go</name>
-    <description>car2go</description>
+    <name>car2go-managment-service</name>
+    <description>Microservicio de Vehiculos</description>
 
     <properties>
         <java.version>17</java.version>

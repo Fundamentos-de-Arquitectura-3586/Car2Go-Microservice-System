@@ -17,9 +17,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
-
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     // Usa exactamente el mismo secret con el que generaste el token
@@ -69,6 +66,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
+        request.setAttribute("JWT_TOKEN", jwt);
+        
         var authToken = new UsernamePasswordAuthenticationToken(
                 userId, null, Collections.emptyList()
         );

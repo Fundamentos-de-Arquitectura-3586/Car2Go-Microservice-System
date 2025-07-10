@@ -66,6 +66,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
+        request.setAttribute("JWT_TOKEN", jwt);
+
         var authToken = new UsernamePasswordAuthenticationToken(
                 userId, null, Collections.emptyList()
         );
