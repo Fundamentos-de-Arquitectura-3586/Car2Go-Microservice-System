@@ -147,6 +147,31 @@ services:
     ports:
       - "8081:8081"
 
+  # IAM Service - Segunda Instancia (Load Balancing)
+  iam-service-2:
+    build:
+      context: ./car2go-iam-service-main
+      dockerfile: Dockerfile
+    container_name: iam-service-2
+    depends_on:
+      mysql-iam:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    environment:
+      - EUREKA_SERVER=http://eureka-server:8761/eureka/
+      - HOSTNAME=iam-service-2
+      - DB_HOST=mysql-iam
+      - DB_PORT=3306
+      - DB_NAME=car2go_iam_service
+      - DB_USERNAME=root
+      - DB_PASSWORD=iam_password
+      - eureka.instance.instance-id=iam-service-2
+    networks:
+      - micro-net
+    ports:
+      - "8091:8081"  # Puerto diferente para el host, mismo puerto interno
+
   # Vehicle Management Service
   management-service:
     build:
